@@ -25,11 +25,16 @@
             minLength: 3
         });
     })
+    $(document).ready(function () {
+        $('#UserDetailsForm').submit(function () {
+            $(this).find(':submit').attr('disabled', 'disabled');
+        });
+    })
 </script>
 
 
 <div id="UserSearchDiv">
-    <form asp-controller="Search" asp-action="UserDetails" method="post">
+    <form asp-controller="Search" asp-action="UserDetails" method="post" id="UserDetailsForm">
         <strong>To search for a user please type in their name. You can manually enter their username and click search. Or search for their real name and select their username from the list provided.</strong>
         <br/>
         <span>Username:</span>

@@ -50,12 +50,13 @@ img {
 }
 
 #UserReposDiv {
-    width: calc( 100% - 260px);
+    width: calc( 100% - 262px);
     float:left;
+    margin-left:2px;
 }
 
 body {
-    font-size:18px
+    font-size:14px
 }
 
 footer {
