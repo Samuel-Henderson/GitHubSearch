@@ -1,0 +1,64 @@
+﻿@model GitHubUserSearchViewModel
+
+@{
+    if (Model != null)
+    {
+        <div id="GitHubUserDetailsDiv" class="UserDetails">
+            <div id="UserDetailsDiv">
+                <img src="@Model.AvatarUrl" alt="Users Avatar Image" asp-append-version="true" />
+                <br />
+                <b>@Html.DisplayNameFor(model => model.Name):</b> @Html.DisplayFor(model => model.Name)
+                <br />
+                <b>@Html.DisplayNameFor(model => model.Login):</b> @Html.DisplayFor(model => model.Login)
+                <br />
+                <b>@Html.DisplayNameFor(model => model.Location):</b> @Html.DisplayFor(model => model.Location)
+            </div>
+            @{
+                if (Model.Repos != null && Model.Repos.Count > 0)
+                {
+                    <div id="UserReposDiv">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Repos[0].Name)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Repos[0].Description)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Repos[0].Stargazers_Count)
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Repos)
+                    {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Name)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Description)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Stargazers_Count)
+                                        </td>
+                                        <td>
+                                            <a href="@item.Html_Url" target="_blank">View</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <b>This user does not have repositories</b>
+                }
+            }
+        </div>
+                }
+}

@@ -1,0 +1,64 @@
+﻿@model GitHubUserSearchViewModel
+
+@{
+    ViewData["Title"] = "Search GitHub Users";
+}
+
+<h2>Search GitHub Users</h2>
+
+
+<script>
+    $(document).ready(function () {
+        $('#Login').autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("FindUserAutoComplete")',
+                    data: { 'NameToFind': request.term },
+                    dataType: "json",
+                    success: function (data) {
+                        response(data);
+                    },
+                    error: function (result) { }
+                });
+            },
+            minLength: 3
+        });
+    })
+</script>
+
+
+<div id="UserSearchDiv">
+    <form asp-controller="Search" asp-action="UserDetails" method="post">
+        <strong>To search for a user please type in their name. You can manually enter their username and click search. Or search for their real name and select their username from the list provided.</strong>
+        <br/>
+        <span>Username:</span>
+        <input asp-for="Login" />
+        <button type="submit">Search</button>
+        @{
+            if (ViewData["Error Message"] != null && !string.IsNullOrEmpty(ViewData["Error Message"].ToString()))
+            {
+                <br />
+                <span id="ErrorMessageDiv" class="Error">
+                    @ViewData["Error Message"].ToString()
+                </span>
+            }
+        }
+        <environment names="Development">
+            @{
+                if (ViewData["Dev Error Message"] != null && !string.IsNullOrEmpty(ViewData["Dev Error Message"].ToString()))
+                {
+                    <br />
+                    <span id="ErrorMessageDiv" class="Error">
+                        @ViewData["Dev Error Message"].ToString()
+                    </span>
+                }
+            }
+        </environment>
+        <br />
+        @Html.Partial("UserDetails")
+
+    </form>
+</div>
+
+
