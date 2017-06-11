@@ -1,22 +1,13 @@
-﻿using GitHubSearch.Models.SearchViewModels;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
-namespace GitHubSearch.Services.GitHub
+namespace GitHubSearch.Github.Service
 {
-    public class GitHubApiService
+    public class GitHubApiService : IGitHub
     {
-
+        #region Consts
         //This string is the base for the get. We will fill in the user name from the selected user.
         private const string APIURL = "https://api.github.com/";
         //A string for the users part of the URL
@@ -27,6 +18,9 @@ namespace GitHubSearch.Services.GitHub
         //Makes sure to search for the user's name and limits to 10 per page.
         private const string APISEARCHUSERSLIMIT = "+in:name+type:Users&per_page=10";
 
+        #endregion
+
+        #region IGitHub
         public async Task<string> GetUserDetails(string Username)
         {
             //This will fill in the URL to be the GitHub Api URL and the username passed to it.
@@ -36,26 +30,6 @@ namespace GitHubSearch.Services.GitHub
                 throw new Exception("Request was not able to be set up.");
 
             return await CallGitHubApi(request);
-        }
-
-        private async Task<string> CallGitHubApi(HttpWebRequest Request)
-        {
-            if (Request == null)
-                throw new Exception("Request was not able to be set up.");
-
-            string jsonResult = string.Empty;
-
-            WebResponse response = await Request.GetResponseAsync();
-
-            using (var streamReader = new StreamReader(response.GetResponseStream()))
-            {
-                //Returns a Json string.
-                jsonResult = await streamReader.ReadToEndAsync();
-            }           
-
-            return jsonResult;
-
-
         }
 
         /// <summary>
@@ -88,6 +62,28 @@ namespace GitHubSearch.Services.GitHub
         }
 
 
+        #endregion
+
+        #region Helpers
+        private async Task<string> CallGitHubApi(HttpWebRequest Request)
+        {
+            if (Request == null)
+                throw new Exception("Request was not able to be set up.");
+
+            string jsonResult = string.Empty;
+
+            WebResponse response = await Request.GetResponseAsync();
+
+            using (var streamReader = new StreamReader(response.GetResponseStream()))
+            {
+                //Returns a Json string.
+                jsonResult = await streamReader.ReadToEndAsync();
+            }           
+
+            return jsonResult;
+
+
+        }
 
         /// <summary>
         /// This will set up a HttpWebRequest to work with GitHub. 
@@ -121,13 +117,14 @@ namespace GitHubSearch.Services.GitHub
             //Using a GET on the API
             request.Method = "GET";
 
-            //This was the final peice to get this to work. Without a User-Agent, the API rejects the call.
+            //This was the final piece to get this to work. Without a User-Agent, the API rejects the call.
             request.Headers["User-Agent"] = "GitHub API testing application : Samuel-Henderson";
 
-            //If you run out of attempts. It is like 60 per house. Use personal Access Token to increase the amount of requests
-            //request.Headers["Authorization"] = "token INSERT TOKEN HERE";
+            //If you run out of attempts. It is like 60 per hour. Use personal Access Token to increase the amount of requests
+            request.Headers["Authorization"] = "token 85fc7f113f3ef19d84d79bbb8bd34f195612af5f";
 
             return request;
         }
+        #endregion
     }
 }

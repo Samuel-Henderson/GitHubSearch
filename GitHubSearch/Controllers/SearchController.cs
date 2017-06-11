@@ -1,11 +1,11 @@
-﻿using GitHubSearch.Models.SearchViewModels;
-using GitHubSearch.Services.GitHub;
+﻿using GitHubSearch.Github;
+using GitHubSearch.Github.Service;
+using GitHubSearch.Models.SearchViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -14,6 +14,18 @@ namespace GitHubSearch.Controllers
 {
     public class SearchController : Controller
     {
+        private readonly GitHubSettings _GitHubSettings;
+        private readonly GitHubFactory _Factory;
+
+        public SearchController(IOptions<GitHubSettings> githubSettings)
+        {
+            //Gets the details from appsettings.json
+            _GitHubSettings = githubSettings.Value;
+
+            //Creates the factory with with the service type from appsettings.json
+            _Factory = new GitHubFactory(GitHubApiTypes.GetGitHubServiceType(_GitHubSettings.Service));
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -29,26 +41,24 @@ namespace GitHubSearch.Controllers
                 return View("Index");
             }
 
-            GitHubApiService service = new GitHubApiService();
+            var githubServiceType = GitHubApiTypes.GetGitHubServiceType(_GitHubSettings.Service);
+
             GitHubUserSearchViewModel model = null;
 
             try
             {
-                var jsonResult = await service.GetUserDetails(Login);
-                //This will partiall fill in the Model. We still need to get the repos
-                model = new GitHubUserSearchViewModel(jsonResult);
 
-                jsonResult = await service.GetUserRepos(model.ReposUrl);
+                model = await _Factory.GetUserDetails(Login);
 
-                var jsonList = JsonConvert.DeserializeObject<List<GitHubUserRepoViewModel>>(jsonResult);
+                List<GitHubUserRepoViewModel> userRepos = await _Factory.GetUserRepos(model.ReposUrl);
 
                 //We are now ordering the list by Stargazers
-                List<GitHubUserRepoViewModel> userRepos = jsonList.OrderByDescending(m => m.Stargazers_Count).ToList();
+                List<GitHubUserRepoViewModel> userReposSorted = userRepos.OrderByDescending(m => m.Stargazers_Count).ToList();
 
                 //Now we are only taking the top 5
-                userRepos = userRepos.Take(5).ToList();
+                userReposSorted = userReposSorted.Take(5).ToList();
 
-                model.Repos = userRepos;
+                model.Repos = userReposSorted;
 
             }
             catch (WebException e)
@@ -91,12 +101,11 @@ namespace GitHubSearch.Controllers
         [HttpPost]
         public async Task<JsonResult> FindUserAutoComplete(string NameToFind)
         {
-            GitHubApiService service = new GitHubApiService();
-            var jsonResult = await service.FindUserName(NameToFind);
-
-            //var jsonList = JsonConvert.DeserializeObject<List<GitHubUserSearchViewModel>>(jsonResult);
-
+            var jsonResult = await _Factory.FindUserName(NameToFind);
             
+            //We are using a dynamic as this does not really need its own class. 
+            //We are not saving any data we are not even storing it here we are just turning it 
+            //one element to a list of strings.
             dynamic jsonParsed = JsonConvert.DeserializeObject(jsonResult);
 
             List<string> logins = new List<string>();

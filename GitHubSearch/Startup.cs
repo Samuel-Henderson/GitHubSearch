@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using GitHubSearch.Github;
 
 namespace GitHubSearch
 {
@@ -29,6 +26,10 @@ namespace GitHubSearch
         {
             // Add framework services.
             services.AddMvc();
+
+            services.AddOptions();
+
+            services.Configure<GitHubSettings>(Configuration.GetSection("GitHubService"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,6 +37,7 @@ namespace GitHubSearch
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
 
             if (env.IsDevelopment())
             {
